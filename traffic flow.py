@@ -12,13 +12,43 @@ def load_csv_file(file_path):
 
 #Task A
 def validate_date_input():
-    day = int(input("Please enter the day of the survey in the format DD: "))
-    month = int(input("Please enter the month of the survey in the format MM: "))
-    year = int(input("Please enter the year of the survey in the format YYYY: "))
+    while True:
+   
+        try:
+            day = int(input("Please enter the day of the survey in the format dd: "))
+            if 1 <= day <= 31:
+                break
+            else:
+                print("Out of range - values must be in the range 1 and 31.")
+        except ValueError:
+            print("Integer required")
 
+    while True:
+        try:
+            month = int(input("Please enter the month of the survey in the format MM: "))
+            if 1 <= month <= 12:
+                break
+            else:
+                print("Out of range - values must be in the range 1 to 12.")
+        except ValueError:
+            print("Integer required")
+
+    while True:
+    
+        try:
+            year = int(input("Please enter the year of the survey in the format YYYY: "))
+            if 2000 <= year <= 2024:
+                break
+            else:
+                print("Out of range - values must range from 2000 and 2024.")
+        except ValueError:
+            print("Integer required")
+
+    print(f"Survey date entered: {day:02d}-{month:02d}-{year}")
     file_path = f"traffic_data{day:02d}{month:02d}{year}.csv"
     print(file_path)
     return file_path
+
 def process_csv_data(file_path, data):
     print("\t"+f"data file selected is{file_path}")
 
