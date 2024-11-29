@@ -1,4 +1,5 @@
 import csv
+import os
 def load_csv_file(file_path):
     while True:
         try:
@@ -10,10 +11,9 @@ def load_csv_file(file_path):
             break
     pass
 
-#Task A
+
 def validate_date_input():
     while True:
-   
         try:
             day = int(input("Please enter the day of the survey in the format dd: "))
             if 1 <= day <= 31:
@@ -34,7 +34,6 @@ def validate_date_input():
             print("Integer required")
 
     while True:
-    
         try:
             year = int(input("Please enter the year of the survey in the format YYYY: "))
             if 2000 <= year <= 2024:
@@ -46,7 +45,11 @@ def validate_date_input():
 
     print(f"Survey date entered: {day:02d}-{month:02d}-{year}")
     file_path = f"traffic_data{day:02d}{month:02d}{year}.csv"
-    print(file_path)
+    print(f"Generated file path: {file_path}")
+
+    if not os.path.exists(file_path):
+        print(f"File '{file_path}' not found. Please check the file name or directory.")
+        return None
     return file_path
 
 def process_csv_data(file_path, data):
@@ -162,7 +165,9 @@ def main():
         choice = input("Enter your choice: ")
         if choice == '1':
             file_path = validate_date_input()
-            data = load_csv_file(file_path)
+            if file_path:
+                data = load_csv_file(file_path)
+
         elif choice == '2':
             if data != None:
                 outcomes = process_csv_data(file_path, data)
