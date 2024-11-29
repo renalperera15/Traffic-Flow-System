@@ -1,15 +1,15 @@
 import csv
 import os
+from datetime import datetime
+
 def load_csv_file(file_path):
-    while True:
-        try:
-            with open(file_path, mode='r') as file:
-                reader = csv.DictReader(file)
-                return list(reader)
-        except FileNotFoundError:
-            print("File was not found.")
-            break
-    pass
+    try:
+        with open(file_path, mode='r') as file:
+            reader = csv.DictReader(file)
+            return list(reader)
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+        return None
 
 
 def validate_date_input():
@@ -39,7 +39,7 @@ def validate_date_input():
             if 2000 <= year <= 2024:
                 break
             else:
-                print("Out of range - values must range from 2000 and 2024.")
+                print("Out of range - values must range from 2000 to 2024.")
         except ValueError:
             print("Integer required")
 
@@ -52,96 +52,74 @@ def validate_date_input():
         return None
     return file_path
 
+
 def process_csv_data(file_path, data):
-    print("\t"+f"data file selected is{file_path}")
+    print(f"\tData file selected: {file_path}")
 
-    # Find Total number of vehicle count
     vehicle_count = len(data)
+    truck_count = sum(1 for item in data if item.get('VehicleType') == 'Truck')
+    electric_vehicle_count = sum(1 for item in data if item ['elctricHybrid'] == 'TRUE')
+    two_wheeled_vehicle_count = sum(1 for item in data if item.get('VehicleType') in ['Bicycle', 'Motorcycle', 'Scooter'])
+    bus_north_count = sum(1 for item in data if item.get('VehicleType') == 'Buss' and item.get('travel_Direction_out') == 'N')
+    count_not_turning = sum(1 for item in data if item.get('travel_Direction_in') == item.get('travel_Direction_out'))
+    truck_percentage = round((truck_count / vehicle_count) * 100) if vehicle_count > 0 else 0
+    bicycle_count = sum(1 for item in data if item.get('VehicleType') == 'Bicycle')
+    bicycle_per_hour = round(bicycle_count / 24) if vehicle_count > 0 else 0
+    over_speed_limit_count = sum(1 for item in data if int(item.get('VehicleSpeed', 0)) > int(item.get('JunctionSpeedLimit', 0)))
+    elm_avenue_vehicle_count = sum(1 for item in data if item.get('JunctionName') == 'Elm Avenue/Rabbit Road')
+    hanley_highway_vehicle_count = sum(1 for item in data if item.get('JunctionName') == 'Hanley Highway/Westway')
+    scooter_count_elm = sum(1 for item in data if item.get('JunctionName') == 'Elm Avenue/Rabbit Road' and item.get('VehicleType') == 'Scooter')
+    scooter_percentage_elm = round((scooter_count_elm / elm_avenue_vehicle_count) * 100) if elm_avenue_vehicle_count > 0 else 0
 
-    # Find Truck count
-    truck_count = 0
+    hourly_data = {}
     for item in data:
-        if item['VehicleType'] == 'Truck':
-            truck_count += 1
+        if item.get('JunctionName') == 'Hanley Highway/Westway' and 'Timestamp' in item:
+            try:
+                hour = item['Timestamp'].split(":")[0]
+                hour = str(int(hour))  # Ensure valid hour
+                hourly_data[hour] = hourly_data.get(hour, 0) + 1
+            except ValueError:
+                continue  
+    if hourly_data:
+        peak_hour_count = max(hourly_data.values())
+        peak_hours = [
+            f"Between {hour}:00 and {int(hour) + 1}:00"
+            for hour, count in hourly_data.items()
+            if count == peak_hour_count
+        ]
+    else:
+        peak_hour_count = 0
+        peak_hours = []
+        
+    rain_hours = sum(1 for item in data if item.get('Rain') == 'True')
 
-    # Find electric vehicles
-    electric_vehicle_count = 0
-    for item in data:
-        if item['elctricHybrid'] == 'True':
-            # data set 'TRUE' is stored as 'True' in dictionary
-            electric_vehicle_count += 1
-
-    # Find two-wheeled vehicles
-    two_wheeled_vehicle_count = 0
-    for item in data:
-        if item['VehicleType'] == 'Bicycle' or item['VehicleType'] == 'Motorcycle' or item['VehicleType'] == 'Scooter':
-            two_wheeled_vehicle_count += 1
-
-    # Find number of buss leaving north
-    buss_north_count = 0
-    for item in data:
-        if item['VehicleType'] == 'Buss' and item['travel_Direction_out'] == 'N':
-            buss_north_count += 1
-
-    # Find number of vehicle not turning
-    count_not_turning = 0
-    for item in data:
-        if item['travel_Direction_in'] == item['travel_Direction_out']:
-            count_not_turning += 1
-
-    # Find trucks percentage
-    truck_percentage = (truck_count/vehicle_count)*100
-
-    # Find the number of bicycles per hour
-    bicycle_count = 0
-    for item in data:
-        if item['VehicleType'] == 'Bicycle':
-            bicycle_count += 1
-    bicycle_per_hour = bicycle_count/24
-
-    # Find over limit vehicles
-    over_limit_vehicle_count = 0
-    for item in data:
-        if item['JunctionSpeedLimit'] < item['VehicleSpeed']:
-            over_limit_vehicle_count += 1
-
-    elm_avenue_vehicle_count = 0
-    for item in data:
-        if item['JunctionName'] == 'Elm Avenue/Rabbit Road':
-            elm_avenue_vehicle_count += 1
-
-    hanley_highway_vehicle_count = 0
-    for item in data:
-        if item['JunctionName'] == 'Hanley Highway/Westway':
-            hanley_highway_vehicle_count += 1
-
-    scooter_count_elm = 0
-    for item in data:
-        if item['JunctionName'] == 'Elm Avenue/Rabbit Road' and item['VehicleType'] == 'Scooter':
-            scooter_count_elm += 1
-    percent_scooter_count_elm = (scooter_count_elm/elm_avenue_vehicle_count)*100
-
-    outcomes = {'The total number of vehicles recorded for this date is': vehicle_count,
-                'The total number of trucks recorded for this date is': truck_count,
-                'The total number of electric vehicles recorded for this date is': electric_vehicle_count,
-                'The total number of two-wheeled vehicles for this date is': two_wheeled_vehicle_count,
-                'The total number of Busses leaving Elm Avenue/Rabbit Road heading North is': buss_north_count,
-                'The total number of Vehicles through both junctions not turning left or right is': count_not_turning,
-                'The percentage of total vehicles recorded that are trucks for this date is': truck_percentage,
-                'The average number of Bicycles per hour for this date is': bicycle_per_hour,
-                'The total number of Vehicles recorded as over the speed limit for this date is': over_limit_vehicle_count,
-                'The total number of vehicles recorded through Elm Avenue/Rabbit Road junction is': elm_avenue_vehicle_count,
-                'The total number of vehicles recorded through Hanley Highway/Westway junction is': hanley_highway_vehicle_count,
-                round(percent_scooter_count_elm, 2):'% of vehicles recorded through Elm Avenue/Rabbit Road are scooters.'
-                }
+    outcomes = {
+        "data file selected is ": file_path,
+        "The total number of vehicles recorded for this date is": vehicle_count,
+        "The total number of trucks recorded for this date is": truck_count,
+        "The total number of electric vehicles recorded for this date is": electric_vehicle_count,
+        "he total number of two-wheeled vehicles for this date is": two_wheeled_vehicle_count,
+        "The total number of Busses leaving Elm Avenue/Rabbit Road heading North is": bus_north_count,
+        "The total number of Vehicles through both junctions not turning left or right is": count_not_turning,
+        "The percentage of total vehicles recorded that are trucks for this date is": f"{truck_percentage}%",
+        "The average number of Bicycles per hour for this date is": bicycle_per_hour,
+        "The total number of Vehicles recorded as over the speed limit for this date is": over_speed_limit_count,
+        "The total number of vehicles recorded through Elm Avenue/Rabbit Road junction is": elm_avenue_vehicle_count,
+        "The total number of vehicles recorded through Hanley Highway/Westway junction is": hanley_highway_vehicle_count,
+        f"{scooter_percentage_elm}% of vehicles recorded through Elm Avenue/Rabbit Road are scooters."
+        "The highest number of vehicles in an hour on Hanley Highway/Westway": peak_hour_count,
+        "The most vehicles through Hanley Highway/Westway weree recorded between": ", ".join(peak_hours),
+        "The number of hours of rain for this date is ": rain_hours
+    }
 
     return outcomes
-    pass
+
 
 def display_outcomes(outcomes):
     for key, value in outcomes.items():
         print(f"{key}: {value}")
-    pass
+
+
 def save_to_file(outcomes, file_name="results.txt"):
     try:
         with open(file_name, "w") as file:
@@ -150,7 +128,7 @@ def save_to_file(outcomes, file_name="results.txt"):
         print(f"Data saved to {file_name}")
     except Exception as e:
         print(f"Error saving data: {e}")
-    pass
+
 
 def main():
     data = None
@@ -169,16 +147,16 @@ def main():
                 data = load_csv_file(file_path)
 
         elif choice == '2':
-            if data != None:
+            if data:
                 outcomes = process_csv_data(file_path, data)
                 display_outcomes(outcomes)
             else:
                 print("No data loaded. Please select a date first.")
         elif choice == '3':
-            if outcomes != None:
+            if outcomes:
                 save_to_file(outcomes)
             else:
-                print("No data loaded. Please select a date first.")
+                print("No data to save. Process data first.")
         elif choice == '4':
             break
         else:
@@ -187,4 +165,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
