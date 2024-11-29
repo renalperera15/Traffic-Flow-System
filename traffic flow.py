@@ -122,10 +122,12 @@ def display_outcomes(outcomes):
 
 def save_to_file(outcomes, file_name="results.txt"):
     try:
-        with open(file_name, "w") as file:
+        # Open the file in append mode
+        with open(file_name, "a") as file:
+            file.write("\n*******************\n")  # Add a separator for clarity
             for key, value in outcomes.items():
                 file.write(f"{key}: {value}\n")
-        print(f"Data saved to {file_name}")
+        print(f"Data appended to {file_name}")
     except Exception as e:
         print(f"Error saving data: {e}")
 
