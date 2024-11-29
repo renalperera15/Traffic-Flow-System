@@ -58,7 +58,7 @@ def process_csv_data(file_path, data):
 
     vehicle_count = len(data)
     truck_count = sum(1 for item in data if item.get('VehicleType') == 'Truck')
-    electric_vehicle_count = sum(1 for item in data if item ['elctricHybrid'] == 'TRUE')
+    electric_vehicle_count = sum(1 for item in data if item.get('elctricHybrid') == 'TRUE')
     two_wheeled_vehicle_count = sum(1 for item in data if item.get('VehicleType') in ['Bicycle', 'Motorcycle', 'Scooter'])
     bus_north_count = sum(1 for item in data if item.get('VehicleType') == 'Buss' and item.get('travel_Direction_out') == 'N')
     count_not_turning = sum(1 for item in data if item.get('travel_Direction_in') == item.get('travel_Direction_out'))
@@ -73,9 +73,9 @@ def process_csv_data(file_path, data):
 
     hourly_data = {}
     for item in data:
-        if item.get('JunctionName') == 'Hanley Highway/Westway' and 'Timestamp' in item:
+        if item.get('JunctionName') == 'Hanley Highway/Westway' and 'timeOfDay' in item:
             try:
-                hour = item['Timestamp'].split(":")[0]
+                hour = item['timeOfDay'].split(":")[0]
                 hour = str(int(hour))  # Ensure valid hour
                 hourly_data[hour] = hourly_data.get(hour, 0) + 1
             except ValueError:
@@ -90,7 +90,7 @@ def process_csv_data(file_path, data):
     else:
         peak_hour_count = 0
         peak_hours = []
-        
+
     rain_hours = sum(1 for item in data if item.get('Rain') == 'True')
 
     outcomes = {
@@ -98,7 +98,7 @@ def process_csv_data(file_path, data):
         "The total number of vehicles recorded for this date is": vehicle_count,
         "The total number of trucks recorded for this date is": truck_count,
         "The total number of electric vehicles recorded for this date is": electric_vehicle_count,
-        "he total number of two-wheeled vehicles for this date is": two_wheeled_vehicle_count,
+        "The total number of two-wheeled vehicles for this date is": two_wheeled_vehicle_count,
         "The total number of Busses leaving Elm Avenue/Rabbit Road heading North is": bus_north_count,
         "The total number of Vehicles through both junctions not turning left or right is": count_not_turning,
         "The percentage of total vehicles recorded that are trucks for this date is": f"{truck_percentage}%",
@@ -106,9 +106,9 @@ def process_csv_data(file_path, data):
         "The total number of Vehicles recorded as over the speed limit for this date is": over_speed_limit_count,
         "The total number of vehicles recorded through Elm Avenue/Rabbit Road junction is": elm_avenue_vehicle_count,
         "The total number of vehicles recorded through Hanley Highway/Westway junction is": hanley_highway_vehicle_count,
-        f"{scooter_percentage_elm}% of vehicles recorded through Elm Avenue/Rabbit Road are scooters."
+        f"{scooter_percentage_elm}% of vehicles recorded through Elm Avenue/Rabbit Road are scooters.": "",
         "The highest number of vehicles in an hour on Hanley Highway/Westway": peak_hour_count,
-        "The most vehicles through Hanley Highway/Westway weree recorded between": ", ".join(peak_hours),
+        "The time or times of the peak (busiest) traffic hour (or hours) on Hanley Highway/Westway": ", ".join(peak_hours),
         "The number of hours of rain for this date is ": rain_hours
     }
 
