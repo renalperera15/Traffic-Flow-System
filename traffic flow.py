@@ -1,16 +1,15 @@
-import csv
-import os
 from datetime import datetime
 
 def load_csv_file(file_path):
     try:
         with open(file_path, mode='r') as file:
-            reader = csv.DictReader(file)
-            return list(reader)
+            lines = file.readlines()
+            headers = lines[0].strip().split(',')
+            data = [dict(zip(headers, line.strip().split(','))) for line in lines[1:]]
+            return data
     except FileNotFoundError:
         print(f"Error: File '{file_path}' not found.")
         return None
-
 
 def validate_date_input():
     while True:
@@ -47,11 +46,12 @@ def validate_date_input():
     file_path = f"traffic_data{day:02d}{month:02d}{year}.csv"
     print(f"Generated file path: {file_path}")
 
-    if not os.path.exists(file_path):
+    try:
+        with open(file_path, 'r') as _:
+            return file_path
+    except FileNotFoundError:
         print(f"File '{file_path}' not found. Please check the file name or directory.")
         return None
-    return file_path
-
 
 def process_csv_data(file_path, data):
     print(f"\tData file selected: {file_path}")
@@ -79,7 +79,8 @@ def process_csv_data(file_path, data):
                 hour = str(int(hour))  # Ensure valid hour
                 hourly_data[hour] = hourly_data.get(hour, 0) + 1
             except ValueError:
-                continue  
+                continue
+
     if hourly_data:
         peak_hour_count = max(hourly_data.values())
         peak_hours = [
@@ -114,23 +115,19 @@ def process_csv_data(file_path, data):
 
     return outcomes
 
-
 def display_outcomes(outcomes):
     for key, value in outcomes.items():
         print(f"{key}: {value}")
 
-
 def save_to_file(outcomes, file_name="results.txt"):
     try:
-        # Open the file in append mode
         with open(file_name, "a") as file:
-            file.write("\n*******************\n")  # Add a separator for clarity
+            file.write("\n*******************\n")
             for key, value in outcomes.items():
                 file.write(f"{key}: {value}\n")
         print(f"Data appended to {file_name}")
     except Exception as e:
         print(f"Error saving data: {e}")
-
 
 def main():
     data = None
@@ -163,7 +160,6 @@ def main():
             break
         else:
             print("Invalid choice, please try again.")
-
 
 if __name__ == "__main__":
     main()
