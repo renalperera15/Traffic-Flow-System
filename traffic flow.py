@@ -58,7 +58,7 @@ def process_csv_data(file_path, data):
 
     vehicle_count = len(data)
     truck_count = sum(1 for item in data if item.get('VehicleType') == 'Truck')
-    electric_vehicle_count = sum(1 for item in data if item.get('elctricHybrid') == 'TRUE')
+    electric_vehicle_count = sum(1 for item in data if item.get('elctricHybrid') == 'True')
     two_wheeled_vehicle_count = sum(1 for item in data if item.get('VehicleType') in ['Bicycle', 'Motorcycle', 'Scooter'])
     bus_north_count = sum(1 for item in data if item.get('VehicleType') == 'Buss' and item.get('travel_Direction_out') == 'N')
     count_not_turning = sum(1 for item in data if item.get('travel_Direction_in') == item.get('travel_Direction_out'))
